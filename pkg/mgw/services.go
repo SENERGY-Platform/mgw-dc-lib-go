@@ -50,9 +50,12 @@ func (this *Client[T]) RegisterService(serviceLocalId string, f ServiceFunc[T], 
 				case <-timer.C:
 					devices := maps.Values(this.GetDevices())
 					eventWg := sync.WaitGroup{}
-					eventWg.Add(len(devices))
 					for _, d := range devices {
+						if d.GetInfo().State == Offline {
+							continue
+						}
 						d := d
+						eventWg.Add(1)
 						go func() {
 							defer eventWg.Done()
 							result, err := f(d, nil)
